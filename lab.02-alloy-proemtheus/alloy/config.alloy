@@ -1,19 +1,4 @@
 
-//  cadvisor:
-//    image: gcr.io/cadvisor/cadvisor
-//    privileged: true
-//    ports:
-//      - 8080:8080
-//    volumes:
-//      - /:/rootfs:ro
-//      - /var/run:/var/run:ro
-//      - /sys:/sys:ro
-//      - /var/lib/docker/:/var/lib/docker:ro
-//      - /dev/disk/:/dev/disk:ro
-//    devices:
-//      - /dev/kmsg
-//
-
 // Host cAdvisor on the Docker socket to expose container metrics.
 prometheus.exporter.cadvisor "example" {
   docker_host = "unix:///var/run/docker.sock"
