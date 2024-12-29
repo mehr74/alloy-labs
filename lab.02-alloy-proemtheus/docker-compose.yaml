@@ -1,0 +1,45 @@
+services: 
+  alloy:
+    # Grafana Alloy version 1.5.1
+    # https://hub.docker.com/r/grafana/alloy/tags
+    image: grafana/alloy:v1.5.1
+    privileged: true
+    ports:
+      - 12345:12345
+    volumes:
+      - ./alloy/config.alloy:/etc/alloy/config.alloy
+      - /:/rootfs:ro
+      - /var/run/docker.sock:/var/run/docker.sock:rw
+      - /proc:/host/proc:ro
+      - /sys:/sys:ro
+      - /var/lib/docker/:/var/lib/docker:ro
+      - /dev/disk/:/dev/disk:ro
+    devices:
+      - /dev/kmsg:/dev/kmsg
+    command:
+      - run
+      - /etc/alloy/config.alloy
+      - --storage.path=/var/lib/alloy/data
+      - --server.http.listen-addr=0.0.0.0:12345
+
+  prometheus:
+    image: prom/prometheus:latest
+    command:
+      - --web.enable-remote-write-receiver
+      - --config.file=/etc/prometheus/prometheus.yml
+    ports:
+      - 9090:9090
+
+  grafana:
+    image: grafana/grafana:11.4.0
+    volumes:
+      - ./grafana/provisioning:/etc/grafana/provisioning 
+    environment:
+      GF_LOG_LEVEL: critical
+      GF_AUTH_ANONYMOUS_ENABLED: true
+      GF_AUTH_ANONYMOUS_ORG_ROLE: Admin
+      GF_SECURITY_ADMIN_USER: admin
+      GF_SECURITY_ADMIN_PASSWORD: grafana
+      GF_SECURITY_ALLOW_EMBEDDING: true
+    ports:
+      - 3000:3000
