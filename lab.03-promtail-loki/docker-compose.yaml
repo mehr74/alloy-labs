@@ -1,0 +1,34 @@
+services: 
+  promtail:
+    image: grafana/promtail:latest
+    ports:
+      - 1514:1514/udp
+      - 9080:9080/tcp
+    command: -config.file=/etc/promtail/promtail-config.yaml -config.expand-env=true
+    volumes:
+      - ./promtail/promtail-config.yaml:/etc/promtail/promtail-config.yaml
+      - /var/run/docker.sock:/var/run/docker.sock:rw
+
+  loki:
+    image: grafana/loki
+    ports:
+      - 3100:3100
+    command: -config.file=/etc/loki/loki-config.yaml -config.expand-env=true
+    restart: always
+    volumes:
+      - ./loki/loki-config.yaml:/etc/loki/loki-config.yaml
+      - ./loki/loki-alert-rules.yaml:/etc/loki/rules/fake/alert-rules.yaml
+
+  grafana:
+    image: grafana/grafana:11.4.0
+    volumes:
+      - ./grafana/provisioning:/etc/grafana/provisioning 
+    environment:
+      GF_LOG_LEVEL: critical
+      GF_AUTH_ANONYMOUS_ENABLED: true
+      GF_AUTH_ANONYMOUS_ORG_ROLE: Admin
+      GF_SECURITY_ADMIN_USER: admin
+      GF_SECURITY_ADMIN_PASSWORD: grafana
+      GF_SECURITY_ALLOW_EMBEDDING: true
+    ports:
+      - 3000:3000
