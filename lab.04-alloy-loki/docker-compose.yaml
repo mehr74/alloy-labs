@@ -1,0 +1,39 @@
+services: 
+  alloy:
+    # Grafana Alloy version 1.5.1
+    # https://hub.docker.com/r/grafana/alloy/tags
+    image: grafana/alloy:v1.5.1
+    privileged: true
+    ports:
+      - 12345:12345
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:rw
+      - ./alloy/config.alloy:/etc/alloy/config.alloy
+    command:
+      - run
+      - /etc/alloy/config.alloy
+      - --storage.path=/var/lib/alloy/data
+      - --server.http.listen-addr=0.0.0.0:12345
+
+  loki:
+    image: grafana/loki
+    ports:
+      - 3100:3100
+    command: -config.file=/etc/loki/loki-config.yaml -config.expand-env=true
+    restart: always
+    volumes:
+      - ./loki/loki-config.yaml:/etc/loki/loki-config.yaml
+
+  grafana:
+    image: grafana/grafana:11.4.0
+    volumes:
+      - ./grafana/provisioning:/etc/grafana/provisioning 
+    environment:
+      GF_LOG_LEVEL: critical
+      GF_AUTH_ANONYMOUS_ENABLED: true
+      GF_AUTH_ANONYMOUS_ORG_ROLE: Admin
+      GF_SECURITY_ADMIN_USER: admin
+      GF_SECURITY_ADMIN_PASSWORD: grafana
+      GF_SECURITY_ALLOW_EMBEDDING: true
+    ports:
+      - 3000:3000
